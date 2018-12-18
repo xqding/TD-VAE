@@ -8,7 +8,6 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
 
-PI = torch.tensor(np.pi)
 
 class MNIST_Dataset(Dataset):
     def __init__(self, image):
@@ -40,7 +39,7 @@ class TD_VAE(nn.Module):
         super(TD_VAE, self).__init__()
         self.input_size = input_size
         self.belief_state_size = belief_state_size
-
+        
         ## LSTM for aggregating belief states
         self.lstm = nn.LSTM(input_size = self.input_size,
                             hidden_size = self.belief_state_size,
@@ -97,7 +96,7 @@ class TD_VAE(nn.Module):
 
     def calculate_loss(self, t_1, t_2):
         ## sample a state at time t_2
-        self.epsilon_t_2 = torch.randn(self.batch_size, self.state_size)
+        self.epsilon_t_2 = self.state_mean.new_tensor(torch.randn(self.batch_size, self.state_size))
         self.state_t_2 = self.state_mean[:,t_2,:] + \
                          torch.exp(self.state_logstd[:,t_2,:])*self.epsilon_t_2
 
@@ -108,7 +107,7 @@ class TD_VAE(nn.Module):
         self.state_t_1_mean = self.infer_state_mu(tmp)
         self.state_t_1_logstd = self.infer_state_logstd(tmp)
         
-        self.epsilon_t_1 = torch.randn(self.batch_size, self.state_size)
+        self.epsilon_t_1 = self.state_mean.new_tensor(torch.randn(self.batch_size, self.state_size))
         self.state_t_1 = self.state_t_1_mean + \
                          torch.exp(self.state_t_1_logstd)*self.epsilon_t_1
 
@@ -120,6 +119,7 @@ class TD_VAE(nn.Module):
             (1-self.input[:,t_2,:])*torch.log(1-obs_prop_t_2), 1))
 
         ## -Pb(z_2|b_2)
+        PI = self.belief_states.new_tensor(torch.tensor(np.pi))        
         self.nloss += -torch.mean(-torch.sum(self.epsilon_t_2**2, 1) - self.state_size/2*torch.log(2*PI) \
                                    -torch.sum(self.state_logstd[:,t_2,:], 1))
 
@@ -141,4 +141,3 @@ class TD_VAE(nn.Module):
         self.loss = -self.nloss
 
         return self.loss
-        
