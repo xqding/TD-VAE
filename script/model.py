@@ -8,7 +8,6 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
 
-
 class MNIST_Dataset(Dataset):
     def __init__(self, image):
         super(MNIST_Dataset).__init__()
@@ -62,7 +61,7 @@ class TD_VAE(nn.Module):
             nn.Linear(self.state_size, self.state_size),
             nn.ReLU(),
             nn.Linear(self.state_size, self.input_size),
-            nn.Sigmoid())        
+            nn.Sigmoid())
 
         ## state transition
         self.state_to_state_mean = nn.Sequential(
@@ -141,3 +140,5 @@ class TD_VAE(nn.Module):
         self.loss = -self.nloss
 
         return self.loss
+
+    
