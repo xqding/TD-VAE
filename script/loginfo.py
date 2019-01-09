@@ -9,7 +9,6 @@ with open('./log/loginfo.txt', 'r') as file_handle:
         if field[-1] != "nan":
             loss.append(float(field[-1]))
             
-plt.plot(loss[::10])
+plt.plot(loss[::50])
+plt.ylim(10,300)
 plt.show()
-
-            

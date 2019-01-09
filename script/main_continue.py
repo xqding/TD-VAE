@@ -25,13 +25,17 @@ belief_state_size = 50
 state_size = 8
 tdvae = TD_VAE(input_size, processed_x_size, belief_state_size, state_size)
 tdvae = tdvae.cuda()
-
 optimizer = optim.Adam(tdvae.parameters(), lr = 0.0005)
 
-num_epoch = 3000
-log_file_handle = open("./log/loginfo.txt", 'w')
+checkpoint = torch.load("./output/model/model_epoch_2999.pt")
+tdvae.load_state_dict(checkpoint['model_state_dict'])
+optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
-for epoch in range(num_epoch):
+start_epoch = 3000
+end_epoch = 6000
+log_file_handle = open("./log/loginfo.txt", 'a')
+
+for epoch in range(start_epoch, end_epoch):
     for idx, images in enumerate(data_loader):
         images = images.cuda()       
         tdvae.forward(images)
@@ -45,7 +49,7 @@ for epoch in range(num_epoch):
         print("epoch: {:>4d}, idx: {:>4d}, loss: {:.2f}".format(epoch, idx, loss.item()),
               file = log_file_handle, flush = True)
         
-        # print("epoch: {:>4d}, idx: {:>4d}, loss: {:.2f}".format(epoch, idx, loss.item()))
+        #print("epoch: {:>4d}, idx: {:>4d}, loss: {:.2f}".format(epoch, idx, loss.item()))
 
     if (epoch + 1) % 50 == 0:
         torch.save({
