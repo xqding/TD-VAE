@@ -13,10 +13,14 @@ class MNIST_Dataset(Dataset):
         return self.image.shape[0]
     def __getitem__(self, idx):
         image = np.copy(self.image[idx, :].reshape(28,28))
+        
+        ## binarize MNIST images
         tmp = np.random.rand(28,28)
         image = tmp <= image
         image = image.astype(np.float32)
-        
+
+        ## randomly choose a direction and generate a sequence
+        ## of images that move in the chosen direction
         direction = np.random.choice(['left', 'right'])
         image_list = []
         image_list.append(image.reshape(-1))
