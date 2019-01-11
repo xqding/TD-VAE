@@ -40,8 +40,11 @@ data_loader = DataLoader(data,
 idx, images = next(enumerate(data_loader))
 
 images = images.cuda()
+
+## calculate belief
 tdvae.forward(images)
 
+## jumpy rollout
 t1, t2 = 11, 15
 rollout_images = tdvae.rollout(images, t1, t2)
 
@@ -62,6 +65,7 @@ for i in range(batch_size):
         axes.imshow(1-rollout_images.cpu().data.numpy()[i,j-t1].reshape(28,28),
                     cmap = 'binary')
         axes.axis('off')
-        
-plt.show()
+
+fig.savefig("./output/rollout_result.eps")
+#plt.show()
 sys.exit()
