@@ -11,14 +11,17 @@ from model import *
 from prep_data import *
 import sys
 
+#### preparing dataset
 with open("./data/MNIST.pkl", 'rb') as file_handle:
     MNIST = pickle.load(file_handle)
 
 data = MNIST_Dataset(MNIST['train_image'])
 batch_size = 512
-data_loader = DataLoader(data, batch_size = batch_size,
+data_loader = DataLoader(data,
+                         batch_size = batch_size,
                          shuffle = True)
 
+#### build a TD-VAE model
 input_size = 784
 processed_x_size = 784
 belief_state_size = 50
@@ -26,13 +29,17 @@ state_size = 8
 tdvae = TD_VAE(input_size, processed_x_size, belief_state_size, state_size)
 tdvae = tdvae.cuda()
 
+#### training
 optimizer = optim.Adam(tdvae.parameters(), lr = 0.0005)
-
-num_epoch = 3000
-log_file_handle = open("./log/loginfo.txt", 'w')
-
+num_epoch = 4000
+log_file_handle = open("./log/loginfo_new.txt", 'w')
 for epoch in range(num_epoch):
     for idx, images in enumerate(data_loader):
+        ## binarize MNIST images
+        tmp = np.random.rand(28,28)
+        images = tmp <= images
+        images = images.astype(np.float32)
+        
         images = images.cuda()       
         tdvae.forward(images)
         t_1 = np.random.choice(16)
@@ -45,7 +52,7 @@ for epoch in range(num_epoch):
         print("epoch: {:>4d}, idx: {:>4d}, loss: {:.2f}".format(epoch, idx, loss.item()),
               file = log_file_handle, flush = True)
         
-        # print("epoch: {:>4d}, idx: {:>4d}, loss: {:.2f}".format(epoch, idx, loss.item()))
+        #print("epoch: {:>4d}, idx: {:>4d}, loss: {:.2f}".format(epoch, idx, loss.item()))
 
     if (epoch + 1) % 50 == 0:
         torch.save({
@@ -53,4 +60,4 @@ for epoch in range(num_epoch):
             'model_state_dict': tdvae.state_dict(),
             'optimizer_state_dict': optimizer.state_dict(),
             'loss': loss
-        }, "./output/model/model_epoch_{}.pt".format(epoch))
+        }, "./output/model/new_model_epoch_{}.pt".format(epoch))
