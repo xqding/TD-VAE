@@ -15,7 +15,7 @@ jumpy predictions.
 """
 
 #### load trained model
-checkpoint = torch.load("./output/model/model_epoch_3799.pt")
+checkpoint = torch.load("./output/model/new_2_model_epoch_3999.pt")
 input_size = 784
 processed_x_size = 784
 belief_state_size = 50
@@ -66,6 +66,6 @@ for i in range(batch_size):
                     cmap = 'binary')
         axes.axis('off')
 
-fig.savefig("./output/rollout_result.eps")
-#plt.show()
+#fig.savefig("./output/rollout_result.eps")
+plt.show()
 sys.exit()

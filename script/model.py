@@ -136,20 +136,31 @@ class TD_VAE(nn.Module):
         the equation (6) and equation (8) in the reference.
 
         """
+        
+        ## pull out the belief and obervations at time t1 and t2.
+        ## Note both t1 and t2 have a length of batch size.
+        ## Samples in one batch can have different values for t1 or t2
+        sample_idx = torch.tensor(np.arange(self.b.shape[0]), device = self.b.device)
+        
+        belief_t1 = self.b[sample_idx, t1, :]
+        belief_t2 = self.b[sample_idx, t2, :]
 
+        obs_t2 = self.x[sample_idx, t2, :]
+
+        
         ## Because the loss is based on variational inference, we need to
         ## draw samples from the variational distribution in order to estimate
         ## the loss function.
         
         ## sample a state at time t2 (see the reparametralization trick is used)
         ## z in layer 2
-        t2_l2_z_mu, t2_l2_z_logsigma = self.l2_b_to_z(self.b[:, t2, :])
+        t2_l2_z_mu, t2_l2_z_logsigma = self.l2_b_to_z(belief_t2)
         t2_l2_z_epsilon = torch.randn_like(t2_l2_z_mu)
         t2_l2_z = t2_l2_z_mu + torch.exp(t2_l2_z_logsigma)*t2_l2_z_epsilon
 
         ## z in layer 1
         t2_l1_z_mu, t2_l1_z_logsigma = self.l1_b_to_z(
-            torch.cat((self.b[:,t2,:], t2_l2_z),dim = -1))
+            torch.cat((belief_t2, t2_l2_z),dim = -1))
         t2_l1_z_epsilon = torch.randn_like(t2_l1_z_mu)
         t2_l1_z = t2_l1_z_mu + torch.exp(t2_l1_z_logsigma)*t2_l1_z_epsilon
 
@@ -159,12 +170,12 @@ class TD_VAE(nn.Module):
         ## sample a state at time t1
         ## infer state at time t1 based on states at time t2
         t1_l2_qs_z_mu, t1_l2_qs_z_logsigma = self.l2_infer_z(
-            torch.cat((self.b[:,t1,:], t2_z), dim = -1))
+            torch.cat((belief_t1, t2_z), dim = -1))
         t1_l2_qs_z_epsilon = torch.randn_like(t1_l2_qs_z_mu)
         t1_l2_qs_z = t1_l2_qs_z_mu + torch.exp(t1_l2_qs_z_logsigma)*t1_l2_qs_z_epsilon
 
         t1_l1_qs_z_mu, t1_l1_qs_z_logsigma = self.l1_infer_z(
-            torch.cat((self.b[:,t1,:], t2_z, t1_l2_qs_z), dim = -1))
+            torch.cat((belief_t1, t2_z, t1_l2_qs_z), dim = -1))
         t1_l1_qs_z_epsilon = torch.randn_like(t1_l1_qs_z_mu)
         t1_l1_qs_z = t1_l1_qs_z_mu + torch.exp(t1_l1_qs_z_logsigma)*t1_l1_qs_z_epsilon
 
@@ -174,9 +185,9 @@ class TD_VAE(nn.Module):
         #### the loss.
 
         ## state distribution at time t1 based on belief at time 1
-        t1_l2_pb_z_mu, t1_l2_pb_z_logsigma = self.l2_b_to_z(self.b[:, t1, :])        
+        t1_l2_pb_z_mu, t1_l2_pb_z_logsigma = self.l2_b_to_z(belief_t1)        
         t1_l1_pb_z_mu, t1_l1_pb_z_logsigma = self.l1_b_to_z(
-            torch.cat((self.b[:,t1,:], t1_l2_qs_z),dim = -1))
+            torch.cat((belief_t1, t1_l2_qs_z),dim = -1))
 
         ## state distribution at time t2 based on states at time t1 and state transition
         t2_l2_t_z_mu, t2_l2_t_z_logsigma = self.l2_transition_z(t1_qs_z)
@@ -216,7 +227,7 @@ class TD_VAE(nn.Module):
 
         
         ## observation prob at time t2
-        loss += -torch.sum(self.x[:,t2,:]*torch.log(t2_x_prob) + (1-self.x[:,t2,:])*torch.log(1-t2_x_prob), -1)
+        loss += -torch.sum(obs_t2*torch.log(t2_x_prob) + (1-obs_t2)*torch.log(1-t2_x_prob), -1)
         loss = torch.mean(loss)
         
         return loss

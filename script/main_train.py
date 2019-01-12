@@ -19,7 +19,7 @@ data = MNIST_Dataset(MNIST['train_image'])
 batch_size = 512
 data_loader = DataLoader(data,
                          batch_size = batch_size,
-                         shuffle = True)
+                         shuffle = True, num_workers = 4)
 
 #### build a TD-VAE model
 input_size = 784
@@ -31,33 +31,36 @@ tdvae = tdvae.cuda()
 
 #### training
 optimizer = optim.Adam(tdvae.parameters(), lr = 0.0005)
-num_epoch = 4000
-log_file_handle = open("./log/loginfo_new.txt", 'w')
+num_epoch = 5000
+log_file_handle = open("./log/loginfo_new_2.txt", 'w')
 for epoch in range(num_epoch):
     for idx, images in enumerate(data_loader):
-        ## binarize MNIST images
-        tmp = np.random.rand(28,28)
-        images = tmp <= images
-        images = images.astype(np.float32)
+        batch_size = images.shape[0]
         
-        images = images.cuda()       
+        images = images.cuda()
         tdvae.forward(images)
-        t_1 = np.random.choice(16)
-        t_2 = t_1 + np.random.choice([1,2,3,4])
+
+        t_1 = np.random.choice(16, size = batch_size)
+        t_2 = t_1 + np.random.choice([1,2,3,4], size = batch_size)
+
+        t_1 = torch.tensor(t_1, device = images.device)
+        t_2 = torch.tensor(t_2, device = images.device)
+        
         loss = tdvae.calculate_loss(t_1, t_2)
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-
+        
         print("epoch: {:>4d}, idx: {:>4d}, loss: {:.2f}".format(epoch, idx, loss.item()),
               file = log_file_handle, flush = True)
         
-        #print("epoch: {:>4d}, idx: {:>4d}, loss: {:.2f}".format(epoch, idx, loss.item()))
+#        print("epoch: {:>4d}, idx: {:>4d}, loss: {:.2f}".format(epoch, idx, loss.item()))
 
+        
     if (epoch + 1) % 50 == 0:
         torch.save({
             'epoch': epoch,
             'model_state_dict': tdvae.state_dict(),
             'optimizer_state_dict': optimizer.state_dict(),
             'loss': loss
-        }, "./output/model/new_model_epoch_{}.pt".format(epoch))
+        }, "./output/model/new_2_model_epoch_{}.pt".format(epoch))
