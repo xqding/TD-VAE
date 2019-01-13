@@ -49,10 +49,13 @@ t1, t2 = 11, 15
 rollout_images = tdvae.rollout(images, t1, t2)
 
 #### plot results
-fig = plt.figure(0, figsize = (t2+2,batch_size))
+#fig = plt.figure(0, figsize = (t2+2,batch_size))
+fig = plt.figure(0, figsize = (12,4))
+
+#fig = plt.figure(0)
 fig.clf()
 gs = gridspec.GridSpec(batch_size,t2+2)
-gs.update(wspace = 0.025, hspace = 0.025)
+gs.update(wspace = 0.05, hspace = 0.05)
 for i in range(batch_size):
     for j in range(t1):
         axes = plt.subplot(gs[i,j])

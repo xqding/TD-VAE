@@ -1,2 +1,4 @@
 *
 !.gitignore
+!rollout_result_git.eps
+!rollout_result_git.png
