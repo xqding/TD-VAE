@@ -32,7 +32,7 @@ with open("./data/MNIST.pkl", 'rb') as file_handle:
 tdvae.eval()
 tdvae = tdvae.cuda()
 
-data = MNIST_Dataset(MNIST['train_image'])
+data = MNIST_Dataset(MNIST['train_image'], binary = False)
 batch_size = 6
 data_loader = DataLoader(data,
                          batch_size = batch_size,
@@ -67,5 +67,5 @@ for i in range(batch_size):
         axes.axis('off')
 
 fig.savefig("./output/rollout_result.eps")
-#plt.show()
+plt.show()
 sys.exit()
