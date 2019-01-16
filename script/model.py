@@ -230,7 +230,7 @@ class TD_VAE(nn.Module):
         l2_z = l2_z_mu + torch.exp(l2_z_logsigma)*l2_z_epsilon
 
         l1_z_mu, l1_z_logsigma = self.l1_b_to_z(
-            torch.cat((self.b[:,t1,:], l2_z), dim = -1))
+            torch.cat((self.b[:,t1-1,:], l2_z), dim = -1))
         l1_z_epsilon = torch.randn_like(l1_z_mu)
         l1_z = l1_z_mu + torch.exp(l1_z_logsigma)*l1_z_epsilon
         current_z = torch.cat((l1_z, l2_z), dim = -1)                        
