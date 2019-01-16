@@ -259,28 +259,3 @@ class TD_VAE(nn.Module):
         rollout_x = torch.stack(rollout_x, dim = 1)
         
         return rollout_x
-    
-# ## generate an observation x_t1 at time t1 based on sampled state z_t1
-# t1_z = torch.cat((t1_l1_z, t1_l2_z), dim = -1)
-# t1_x = self.z_to_x(t1_z)    
-# x_list.append(t1_x)
-
-# for k in range(4):
-#     ## predicting states after time t1 using state transition        
-#     t2_l2_z_mu, t2_l2_z_logsigma = self.l2_transition_z(t1_z)
-#     t2_l2_z_epsilon = torch.randn_like(t2_l2_z_mu)
-#     t2_l2_z = t2_l2_z_mu + torch.exp(t2_l2_z_logsigma)*t2_l2_z_epsilon
-
-#     t2_l1_z_mu, t2_l1_z_logsigma  = self.l1_transition_z(
-#         torch.cat((t1_z, t2_l2_z), dim = -1))
-#     t2_l1_z_epsilon = torch.randn_like(t2_l1_z_mu)        
-#     t2_l1_z = t2_l1_z_mu + torch.exp(t2_l1_z_logsigma)*t2_l1_z_epsilon
-
-#     t2_z = torch.cat((t2_l1_z, t2_l2_z), dim = -1)
-
-#     ## generate an observation x_t1 at time t1 based on sampled state z_t1
-#     t2_x = self.z_to_x(t2_z)
-#     x_list.append(t2_x)
-
-#     t1_z = t2_z
-

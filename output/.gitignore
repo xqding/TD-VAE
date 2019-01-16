@@ -2,3 +2,5 @@
 !.gitignore
 !rollout_result_git.eps
 !rollout_result_git.png
+!rollout_result.eps
+!rollout_result.png
