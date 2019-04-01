@@ -34,12 +34,7 @@ optimizer = optim.Adam(tdvae.parameters(), lr = 0.0005)
 num_epoch = 4000
 log_file_handle = open("./log/loginfo_new.txt", 'w')
 for epoch in range(num_epoch):
-    for idx, images in enumerate(data_loader):
-        ## binarize MNIST images
-        tmp = np.random.rand(28,28)
-        images = tmp <= images
-        images = images.astype(np.float32)
-        
+    for idx, images in enumerate(data_loader):        
         images = images.cuda()       
         tdvae.forward(images)
         t_1 = np.random.choice(16)
@@ -52,7 +47,7 @@ for epoch in range(num_epoch):
         print("epoch: {:>4d}, idx: {:>4d}, loss: {:.2f}".format(epoch, idx, loss.item()),
               file = log_file_handle, flush = True)
         
-        #print("epoch: {:>4d}, idx: {:>4d}, loss: {:.2f}".format(epoch, idx, loss.item()))
+        print("epoch: {:>4d}, idx: {:>4d}, loss: {:.2f}".format(epoch, idx, loss.item()))
 
     if (epoch + 1) % 50 == 0:
         torch.save({
